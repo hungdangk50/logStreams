@@ -1,0 +1,20 @@
+{
+  "Records": [
+    {
+      "kinesis": {
+        "kinesisSchemaVersion": "1.0",
+        "partitionKey": "TXN-001",
+        "sequenceNumber": "49679326671304281809807299695281966992524520932800194503794405938912589196001024",
+        "data": "PLACEHOLDER_RUN_generate_sample_event.py_TO_CREATE_VALID_DATA",
+        "approximateArrivalTimestamp": 1717920000.0
+      },
+      "eventSource": "aws:kinesis",
+      "eventVersion": "1.0",
+      "eventID": "sample-event-id",
+      "eventName": "aws:kinesis:record",
+      "invokeIdentityArn": "arn:aws:iam::123456789012:role/logstream-lambda-role",
+      "awsRegion": "ap-southeast-1",
+      "eventSourceARN": "arn:aws:kinesis:ap-southeast-1:123456789012:stream/logstream-raw"
+    }
+  ]
+}

@@ -1,0 +1,164 @@
+{
+  "TableName": "LogStreamTransactions",
+  "BillingMode": "PAY_PER_REQUEST",
+  "KeySchema": [
+    { "AttributeName": "pk", "KeyType": "HASH" },
+    { "AttributeName": "sk", "KeyType": "RANGE" }
+  ],
+  "AttributeDefinitions": [
+    { "AttributeName": "pk",     "AttributeType": "S" },
+    { "AttributeName": "sk",     "AttributeType": "S" },
+    { "AttributeName": "gsi1pk", "AttributeType": "S" },
+    { "AttributeName": "gsi1sk", "AttributeType": "S" },
+    { "AttributeName": "gsi2pk", "AttributeType": "S" },
+    { "AttributeName": "gsi2sk", "AttributeType": "S" }
+  ],
+  "GlobalSecondaryIndexes": [
+    {
+      "IndexName": "GSI1-StatusIndex",
+      "KeySchema": [
+        { "AttributeName": "gsi1pk", "KeyType": "HASH" },
+        { "AttributeName": "gsi1sk", "KeyType": "RANGE" }
+      ],
+      "Projection": { "ProjectionType": "KEYS_ONLY" }
+    },
+    {
+      "IndexName": "GSI2-TraceIndex",
+      "KeySchema": [
+        { "AttributeName": "gsi2pk", "KeyType": "HASH" },
+        { "AttributeName": "gsi2sk", "KeyType": "RANGE" }
+      ],
+      "Projection": { "ProjectionType": "KEYS_ONLY" }
+    }
+  ],
+  "TimeToLiveSpecification": {
+    "AttributeName": "ttl",
+    "Enabled": true
+  },
+  "StreamSpecification": {
+    "StreamEnabled": true,
+    "StreamViewType": "OLD_IMAGE"
+  },
+  "ItemTypes": {
+    "META": {
+      "description": "Transaction metadata — 1 item per transaction",
+      "keys": { "pk": "TXN#<transactionId>", "sk": "META" },
+      "attributes": {
+        "transactionId":  { "type": "S",  "required": true },
+        "status":         { "type": "S",  "required": true, "values": ["RUNNING", "COMPLETED", "FAILED", "TIMEOUT"] },
+        "currentStep":    { "type": "S",  "required": false },
+        "stepCount":      { "type": "N",  "required": false },
+        "startedAt":      { "type": "S",  "required": true, "format": "ISO8601" },
+        "lastUpdatedAt":  { "type": "S",  "required": true, "format": "ISO8601" },
+        "completedAt":    { "type": "S",  "required": false, "format": "ISO8601" },
+        "ttl":            { "type": "N",  "required": true, "description": "Epoch seconds for auto-delete" },
+        "gsi1pk":         { "type": "S",  "required": false, "value": "STATUS#RUNNING", "note": "Sparse — only when RUNNING" },
+        "gsi1sk":         { "type": "S",  "required": false, "value": "lastUpdatedAt" },
+        "metadata":       { "type": "M",  "required": false }
+      },
+      "example": {
+        "pk": "TXN#TXN-001",
+        "sk": "META",
+        "transactionId": "TXN-001",
+        "status": "RUNNING",
+        "currentStep": "PAYMENT",
+        "stepCount": 2,
+        "startedAt": "2026-06-09T10:00:00.000Z",
+        "lastUpdatedAt": "2026-06-09T10:00:05.123Z",
+        "completedAt": null,
+        "ttl": 1749547200,
+        "gsi1pk": "STATUS#RUNNING",
+        "gsi1sk": "2026-06-09T10:00:05.123Z",
+        "metadata": { "originService": "order-svc" }
+      }
+    },
+    "STEP": {
+      "description": "Step metadata — 1 item per step, no full logs",
+      "keys": { "pk": "TXN#<transactionId>", "sk": "STEP#<order>#<stepName>" },
+      "attributes": {
+        "stepName":      { "type": "S",  "required": true },
+        "stepOrder":     { "type": "N",  "required": true },
+        "traceId":       { "type": "S",  "required": true },
+        "status":        { "type": "S",  "required": true, "values": ["STARTED", "SUCCESS", "ERROR", "TIMEOUT", "SKIPPED"] },
+        "serviceName":   { "type": "S",  "required": false },
+        "startedAt":     { "type": "S",  "required": false, "format": "ISO8601" },
+        "endedAt":       { "type": "S",  "required": false, "format": "ISO8601" },
+        "durationMs":    { "type": "N",  "required": false },
+        "errorCode":     { "type": "S",  "required": false },
+        "errorMessage":  { "type": "S",  "required": false },
+        "logChunkCount": { "type": "N",  "required": false, "default": 0 },
+        "gsi2pk":        { "type": "S",  "required": true, "value": "TRACE#<traceId>" },
+        "gsi2sk":        { "type": "S",  "required": true, "value": "TXN#<transactionId>" }
+      },
+      "example": {
+        "pk": "TXN#TXN-001",
+        "sk": "STEP#02#PAYMENT",
+        "stepName": "PAYMENT",
+        "stepOrder": 2,
+        "traceId": "trace-bbb",
+        "status": "STARTED",
+        "serviceName": "payment-svc",
+        "startedAt": "2026-06-09T10:00:03.000Z",
+        "endedAt": null,
+        "durationMs": null,
+        "errorCode": null,
+        "errorMessage": null,
+        "logChunkCount": 1,
+        "gsi2pk": "TRACE#trace-bbb",
+        "gsi2sk": "TXN#TXN-001"
+      }
+    },
+    "LOG": {
+      "description": "Temporary log buffer — chunked ~300KB per item",
+      "keys": { "pk": "TXN#<transactionId>", "sk": "LOG#<traceId>#<chunkSeq>" },
+      "attributes": {
+        "traceId":   { "type": "S",  "required": true },
+        "stepName":  { "type": "S",  "required": true },
+        "chunkSeq":  { "type": "N",  "required": true },
+        "logLines":  { "type": "L",  "required": true, "description": "List of log event objects" },
+        "lineCount": { "type": "N",  "required": true },
+        "byteSize":  { "type": "N",  "required": true, "max": 307200 },
+        "createdAt": { "type": "S",  "required": true, "format": "ISO8601" }
+      },
+      "example": {
+        "pk": "TXN#TXN-001",
+        "sk": "LOG#trace-bbb#0001",
+        "traceId": "trace-bbb",
+        "stepName": "PAYMENT",
+        "chunkSeq": 1,
+        "logLines": [
+          {
+            "timestamp": "2026-06-09T10:00:03.100Z",
+            "level": "INFO",
+            "message": "Payment request received",
+            "transactionId": "TXN-001",
+            "traceId": "trace-bbb",
+            "step": "PAYMENT"
+          },
+          {
+            "timestamp": "2026-06-09T10:00:03.500Z",
+            "level": "ERROR",
+            "message": "Payment declined",
+            "errorCode": "PAYMENT_DECLINED"
+          }
+        ],
+        "lineCount": 2,
+        "byteSize": 512,
+        "createdAt": "2026-06-09T10:00:03.600Z"
+      }
+    }
+  },
+  "GlobalSecondaryIndexes_doc": {
+    "GSI1-StatusIndex": {
+      "purpose": "Timeout detection — query RUNNING transactions older than threshold",
+      "hashKey": "gsi1pk = STATUS#RUNNING",
+      "rangeKey": "gsi1sk = lastUpdatedAt",
+      "sparse": true
+    },
+    "GSI2-TraceIndex": {
+      "purpose": "Reverse lookup — find transactionId by traceId",
+      "hashKey": "gsi2pk = TRACE#<traceId>",
+      "rangeKey": "gsi2sk = TXN#<transactionId>"
+    }
+  }
+}

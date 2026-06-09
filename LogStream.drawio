@@ -1,0 +1,188 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0" version="24.0.0">
+  <diagram name="LogStream Pipeline" id="3RXx3FFee6ZLpFIpsvo-">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1500" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- INGEST PIPELINE -->
+        <mxCell id="ingest-label" parent="1" style="text;html=1;fontStyle=1;fontSize=14;align=left;" value="1. INGEST" vertex="1">
+          <mxGeometry height="30" width="120" x="460" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="bJB0adVnca6cAe5JQdvD-1" parent="1" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Application / Microservices&#xa;JSON Logs&#xa;transactionId · traceId · step · level" vertex="1">
+          <mxGeometry height="80" width="280" x="460" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="bJB0adVnca6cAe5JQdvD-2" parent="1" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="CloudWatch Logs&#xa;Async · ~0.5–2s" vertex="1">
+          <mxGeometry height="70" width="280" x="460" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="bJB0adVnca6cAe5JQdvD-3" parent="1" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Subscription Filter" vertex="1">
+          <mxGeometry height="60" width="280" x="460" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="bJB0adVnca6cAe5JQdvD-4" parent="1" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Kinesis Data Streams&#xa;Scale-out: Shards · Latency: ms" vertex="1">
+          <mxGeometry height="80" width="280" x="460" y="350" as="geometry" />
+        </mxCell>
+
+        <!-- PROCESS -->
+        <mxCell id="process-label" parent="1" style="text;html=1;fontStyle=1;fontSize=14;align=left;" value="2. PROCESS" vertex="1">
+          <mxGeometry height="30" width="120" x="460" y="450" as="geometry" />
+        </mxCell>
+        <mxCell id="bJB0adVnca6cAe5JQdvD-5" parent="1" style="rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="Log Normalizer&#xa;(Lambda / Fargate / Flink)&#xa;Parse · Mask PII · Enrich step name&#xa;Scale-out: Consumer Group" vertex="1">
+          <mxGeometry height="110" width="280" x="460" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="bJB0adVnca6cAe5JQdvD-6" parent="1" style="rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="Transaction Aggregator&#xa;Group by transactionId&#xa;In-flight State: Redis / DynamoDB&#xa;(temp · not source of truth)" vertex="1">
+          <mxGeometry height="120" width="300" x="80" y="650" as="geometry" />
+        </mxCell>
+
+        <!-- PERSIST -->
+        <mxCell id="persist-label" parent="1" style="text;html=1;fontStyle=1;fontSize=14;align=left;" value="3. PERSIST" vertex="1">
+          <mxGeometry height="30" width="120" x="80" y="800" as="geometry" />
+        </mxCell>
+        <mxCell id="LCtn1x4bzWy_FzzBVWY--1" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#fff2cc;strokeColor=#d6b656;" value="PostgreSQL&#xa;transactions&#xa;transaction_steps&#xa;&#xa;Flow diagram metadata&#xa;step status · traceId pointer&#xa;UPSERT per step event" vertex="1">
+          <mxGeometry height="140" width="280" x="40" y="840" as="geometry" />
+        </mxCell>
+        <mxCell id="bJB0adVnca6cAe5JQdvD-7" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#fff2cc;strokeColor=#d6b656;" value="S3 Archive&#xa;year/month/day/&#xa;transactionId/traceId/&#xa;&#xa;Full log per step (JSONL.gz)&#xa;1 traceId = 1 step logs" vertex="1">
+          <mxGeometry height="140" width="280" x="380" y="840" as="geometry" />
+        </mxCell>
+
+        <!-- DETECTION -->
+        <mxCell id="detect-label" parent="1" style="text;html=1;fontStyle=1;fontSize=14;align=left;" value="4. DETECTION" vertex="1">
+          <mxGeometry height="30" width="120" x="820" y="620" as="geometry" />
+        </mxCell>
+        <mxCell id="bJB0adVnca6cAe5JQdvD-8" parent="1" style="rounded=1;fillColor=#f8cecc;strokeColor=#b85450;" value="Detection Engine&#xa;&#xa;Per-log (from Normalizer):&#xa;  ERROR pattern · Fraud rules&#xa;Per-transaction (from Aggregator):&#xa;  Step timeout · Missing step&#xa;  Flow invalid · Latency 1–3s" vertex="1">
+          <mxGeometry height="150" width="320" x="780" y="650" as="geometry" />
+        </mxCell>
+        <mxCell id="bJB0adVnca6cAe5JQdvD-9" parent="1" style="rounded=1;dashed=1;fillColor=#f5f5f5;strokeColor=#666666;" value="EventBridge&#xa;(optional routing)" vertex="1">
+          <mxGeometry height="70" width="200" x="840" y="860" as="geometry" />
+        </mxCell>
+        <mxCell id="bJB0adVnca6cAe5JQdvD-10" parent="1" style="rounded=1;fillColor=#f8cecc;strokeColor=#b85450;" value="SNS Topic&#xa;TRANSACTION_ISSUE events&#xa;&#xa;Auto Handler downstream:&#xa;retry · alert · workflow · incident" vertex="1">
+          <mxGeometry height="110" width="280" x="780" y="980" as="geometry" />
+        </mxCell>
+
+        <!-- QUERY -->
+        <mxCell id="query-label" parent="1" style="text;html=1;fontStyle=1;fontSize=14;align=left;" value="5. QUERY" vertex="1">
+          <mxGeometry height="30" width="120" x="380" y="1020" as="geometry" />
+        </mxCell>
+        <mxCell id="query-api" parent="1" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="Query API / Dashboard&#xa;&#xa;Flow diagram ← PostgreSQL&#xa;Full log per step ← S3 (via traceId)" vertex="1">
+          <mxGeometry height="90" width="300" x="380" y="1050" as="geometry" />
+        </mxCell>
+
+        <!-- SCALE-OUT NOTE -->
+        <mxCell id="bJB0adVnca6cAe5JQdvD-12" parent="1" style="rounded=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=8;" value="Scale-out Points&#xa;1. Kinesis Shards&#xa;2. Consumer Groups&#xa;3. Lambda Concurrency&#xa;4. Flink Parallelism" vertex="1">
+          <mxGeometry height="130" width="240" x="1140" y="160" as="geometry" />
+        </mxCell>
+
+        <!-- DATA MODEL NOTE -->
+        <mxCell id="data-model-note" parent="1" style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=8;fontSize=11;" value="Data Model&#xa;&#xa;PostgreSQL = metadata + flow diagram&#xa;  transactions (status, current_step)&#xa;  transaction_steps (step, traceId, s3_key)&#xa;&#xa;S3 = full raw logs per traceId/step&#xa;&#xa;SNS payload: transactionId, traceId,&#xa;  stepName, issueType, s3LogKey" vertex="1">
+          <mxGeometry height="200" width="280" x="40" y="1180" as="geometry" />
+        </mxCell>
+
+        <!-- EDGES: Ingest pipeline -->
+        <mxCell id="bJB0adVnca6cAe5JQdvD-13" edge="1" parent="1" source="bJB0adVnca6cAe5JQdvD-1" target="bJB0adVnca6cAe5JQdvD-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="bJB0adVnca6cAe5JQdvD-14" edge="1" parent="1" source="bJB0adVnca6cAe5JQdvD-2" target="bJB0adVnca6cAe5JQdvD-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="bJB0adVnca6cAe5JQdvD-15" edge="1" parent="1" source="bJB0adVnca6cAe5JQdvD-3" target="bJB0adVnca6cAe5JQdvD-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="bJB0adVnca6cAe5JQdvD-16" edge="1" parent="1" source="bJB0adVnca6cAe5JQdvD-4" target="bJB0adVnca6cAe5JQdvD-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Normalizer fan-out -->
+        <mxCell id="bJB0adVnca6cAe5JQdvD-17" edge="1" parent="1" source="bJB0adVnca6cAe5JQdvD-5" target="bJB0adVnca6cAe5JQdvD-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="bJB0adVnca6cAe5JQdvD-19" edge="1" parent="1" source="bJB0adVnca6cAe5JQdvD-5" target="bJB0adVnca6cAe5JQdvD-8">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="600" y="620" />
+              <mxPoint x="940" y="620" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-norm-det-label" connectable="0" parent="bJB0adVnca6cAe5JQdvD-19" style="edgeLabel;html=1;fontSize=10;" value="per-log" vertex="1">
+          <mxGeometry relative="1" x="-0.2" y="1" as="geometry">
+            <mxPoint x="10" y="-12" as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Aggregator fan-out -->
+        <mxCell id="edge-agg-pg" edge="1" parent="1" source="bJB0adVnca6cAe5JQdvD-6" target="LCtn1x4bzWy_FzzBVWY--1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-agg-pg-label" connectable="0" parent="edge-agg-pg" style="edgeLabel;html=1;fontSize=10;" value="UPSERT steps" vertex="1">
+          <mxGeometry relative="1" x="-0.1" y="1" as="geometry">
+            <mxPoint y="-8" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="bJB0adVnca6cAe5JQdvD-18" edge="1" parent="1" source="bJB0adVnca6cAe5JQdvD-6" target="bJB0adVnca6cAe5JQdvD-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-agg-s3-label" connectable="0" parent="bJB0adVnca6cAe5JQdvD-18" style="edgeLabel;html=1;fontSize=10;" value="append log" vertex="1">
+          <mxGeometry relative="1" x="-0.1" y="1" as="geometry">
+            <mxPoint y="-8" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-agg-det" edge="1" parent="1" source="bJB0adVnca6cAe5JQdvD-6" target="bJB0adVnca6cAe5JQdvD-8">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="230" y="820" />
+              <mxPoint x="700" y="820" />
+              <mxPoint x="700" y="725" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-agg-det-label" connectable="0" parent="edge-agg-det" style="edgeLabel;html=1;fontSize=10;" value="per-transaction rules" vertex="1">
+          <mxGeometry relative="1" x="0.3" y="1" as="geometry">
+            <mxPoint x="-20" y="10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Detection to SNS -->
+        <mxCell id="edge-det-sns" edge="1" parent="1" source="bJB0adVnca6cAe5JQdvD-8" target="bJB0adVnca6cAe5JQdvD-10">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-det-sns-label" connectable="0" parent="edge-det-sns" style="edgeLabel;html=1;fontSize=10;" value="publish issue" vertex="1">
+          <mxGeometry relative="1" x="-0.1" y="1" as="geometry">
+            <mxPoint x="15" y="-5" as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Detection to EventBridge (optional, dashed) -->
+        <mxCell id="bJB0adVnca6cAe5JQdvD-20" edge="1" parent="1" source="bJB0adVnca6cAe5JQdvD-8" target="bJB0adVnca6cAe5JQdvD-9" style="dashed=1;strokeColor=#666666;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="bJB0adVnca6cAe5JQdvD-21" edge="1" parent="1" source="bJB0adVnca6cAe5JQdvD-9" target="bJB0adVnca6cAe5JQdvD-10" style="dashed=1;strokeColor=#666666;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Query API reads -->
+        <mxCell id="edge-pg-query" edge="1" parent="1" source="LCtn1x4bzWy_FzzBVWY--1" target="query-api" style="dashed=1;strokeColor=#9673a6;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="180" y="1020" />
+              <mxPoint x="350" y="1020" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-pg-query-label" connectable="0" parent="edge-pg-query" style="edgeLabel;html=1;fontSize=10;" value="flow diagram" vertex="1">
+          <mxGeometry relative="1" x="-0.2" y="1" as="geometry">
+            <mxPoint x="10" y="-8" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-s3-query" edge="1" parent="1" source="bJB0adVnca6cAe5JQdvD-7" target="query-api" style="dashed=1;strokeColor=#9673a6;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-s3-query-label" connectable="0" parent="edge-s3-query" style="edgeLabel;html=1;fontSize=10;" value="full log by traceId" vertex="1">
+          <mxGeometry relative="1" x="-0.1" y="1" as="geometry">
+            <mxPoint y="-8" as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Remove old floating edge -->
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
