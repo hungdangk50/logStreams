@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LogStream — Tài liệu dự án</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --surface2: #243044;
+      --border: #2d3a4f;
+      --text: #e6edf3;
+      --text-muted: #8b9cb3;
+      --accent: #58a6ff;
+      --accent2: #3fb950;
+      --warn: #d29922;
+      --code-bg: #0d1117;
+      --sidebar-w: 280px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      font-size: 15px;
+    }
+
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    nav.sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: var(--sidebar-w);
+      height: 100vh;
+      overflow-y: auto;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 1.5rem 0;
+      z-index: 100;
+    }
+
+    nav.sidebar .brand {
+      padding: 0 1.25rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1rem;
+    }
+
+    nav.sidebar .brand h1 {
+      font-size: 1.15rem;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    nav.sidebar .brand p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    nav.sidebar ul { list-style: none; }
+
+    nav.sidebar > ul > li > a {
+      display: block;
+      padding: 0.45rem 1.25rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-top: 0.75rem;
+    }
+
+    nav.sidebar ul ul a {
+      display: block;
+      padding: 0.35rem 1.25rem 0.35rem 1.75rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.88rem;
+      border-left: 2px solid transparent;
+      transition: all 0.15s;
+    }
+
+    nav.sidebar ul ul a:hover,
+    nav.sidebar ul ul a.active {
+      color: var(--accent);
+      border-left-color: var(--accent);
+      background: rgba(88, 166, 255, 0.06);
+    }
+
+    main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      max-width: 960px;
+      padding: 2.5rem 3rem 4rem;
+    }
+
+    section {
+      margin-bottom: 3.5rem;
+      scroll-margin-top: 1.5rem;
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text);
+      padding-bottom: 0.6rem;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 1.25rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 1.75rem 0 0.75rem;
+    }
+
+    h4 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text);
+      margin: 1.25rem 0 0.5rem;
+    }
+
+    p { margin-bottom: 0.85rem; }
+
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 2rem 0;
+    }
+
+    a { color: var(--accent); }
+
+    ul, ol {
+      margin: 0.5rem 0 1rem 1.5rem;
+    }
+
+    li { margin-bottom: 0.35rem; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0 1.5rem;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.55rem 0.75rem;
+      text-align: left;
+    }
+
+    th {
+      background: var(--surface2);
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem 1.15rem;
+      overflow-x: auto;
+      margin: 0.75rem 0 1.25rem;
+      font-size: 0.84rem;
+      line-height: 1.5;
+    }
+
+    code {
+      font-family: "Cascadia Code", "Fira Code", Consolas, monospace;
+      font-size: 0.88em;
+    }
+
+    p code, li code, td code {
+      background: var(--code-bg);
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    .pipeline {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+      font-family: monospace;
+      font-size: 0.85rem;
+      line-height: 1.8;
+      margin: 1rem 0;
+      white-space: pre;
+      overflow-x: auto;
+    }
+
+    .tree {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem 1.25rem;
+      font-family: monospace;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      white-space: pre;
+      margin: 0.75rem 0 1.25rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.15em 0.55em;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .badge-draft { background: rgba(210, 153, 34, 0.2); color: var(--warn); }
+    .badge-new { background: rgba(63, 185, 80, 0.15); color: var(--accent2); }
+
+    .callout {
+      background: var(--surface);
+      border-left: 4px solid var(--accent);
+      padding: 0.85rem 1.15rem;
+      border-radius: 0 6px 6px 0;
+      margin: 1rem 0;
+      font-size: 0.92rem;
+    }
+
+    .callout-warn {
+      border-left-color: var(--warn);
+    }
+
+    .checklist { list-style: none; margin-left: 0; }
+    .checklist li::before { content: "☐ "; color: var(--text-muted); }
+
+    .mermaid {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 1rem 0 1.5rem;
+      text-align: center;
+    }
+
+    footer {
+      margin-left: var(--sidebar-w);
+      padding: 1.5rem 3rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.82rem;
+    }
+
+    @media (max-width: 900px) {
+      nav.sidebar { display: none; }
+      main, footer { margin-left: 0; padding: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar">
+    <div class="brand">
+      <h1>LogStream</h1>
+      <p>Tài liệu dự án — v2026.06</p>
+    </div>
+    <ul>
+      <li><a href="#overview">Tổng quan</a>
+        <ul>
+          <li><a href="#pipeline">Pipeline</a></li>
+          <li><a href="#structure">Cấu trúc thư mục</a></li>
+        </ul>
+      </li>
+      <li><a href="#guide">Hướng dẫn chạy</a>
+        <ul>
+          <li><a href="#env">Yêu cầu môi trường</a></li>
+          <li><a href="#test-local">Unit test local</a></li>
+          <li><a href="#build">Build Lambda</a></li>
+          <li><a href="#deploy">Deploy AWS</a></li>
+          <li><a href="#aws-config">Cấu hình AWS</a></li>
+          <li><a href="#test-lambda">Test Lambda</a></li>
+          <li><a href="#init-pg">Khởi tạo PostgreSQL</a></li>
+          <li><a href="#init-ddb">Khởi tạo DynamoDB</a></li>
+          <li><a href="#e2e">Test end-to-end</a></li>
+          <li><a href="#troubleshoot">Xử lý lỗi</a></li>
+        </ul>
+      </li>
+      <li><a href="#schema">Database Schema</a>
+        <ul>
+          <li><a href="#pg-transactions">PostgreSQL</a></li>
+          <li><a href="#ddb">DynamoDB</a></li>
+          <li><a href="#mapping">Mapping</a></li>
+        </ul>
+      </li>
+      <li><a href="#retry">Retry &amp; Attempt <span class="badge badge-draft">Draft</span></a>
+        <ul>
+          <li><a href="#retry-log">Quy ước log</a></li>
+          <li><a href="#retry-ddb">DynamoDB ATTEMPT</a></li>
+          <li><a href="#idle-timeout">Idle timeout</a></li>
+          <li><a href="#aggregator">Aggregator flow</a></li>
+          <li><a href="#retry-pg">PostgreSQL migration</a></li>
+        </ul>
+      </li>
+      <li><a href="#lambda">Lambda Components</a></li>
+      <li><a href="#sql">SQL Scripts</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <!-- ============================================================ -->
+    <section id="overview">
+      <h2>Tổng quan dự án</h2>
+      <p>
+        <strong>LogStream</strong> là pipeline thu thập, chuẩn hóa và lưu trữ log từ microservice
+        theo <code>transactionId</code> và <code>traceId</code>, hỗ trợ flow diagram transaction
+        và phát hiện issue tự động.
+      </p>
+
+      <h3 id="pipeline">Pipeline</h3>
+      <div class="pipeline">App (JSON log)
+  → CloudWatch Logs
+  → Subscription Filter
+  → Kinesis (input stream: logstream-raw)
+  → Lambda: Log Normalizer          ← đã có code
+  → Kinesis (normalized stream)
+  → Transaction Aggregator          ← draft (DynamoDB buffer → S3 + PostgreSQL)
+  → Detection Engine → SNS</div>
+      <p>Sơ đồ kiến trúc chi tiết: <code>LogStream.drawio</code></p>
+
+      <h3 id="structure">Cấu trúc thư mục</h3>
+      <div class="tree">logStream/
+├── LogStream.drawio
+├── docs/
+│   └── index.html                  ← tài liệu này
+├── guide.txt
+├── schema/
+│   ├── database-schema.md
+│   ├── retry-design.md
+│   ├── postgresql.sql
+│   ├── postgresql-retry-migration.sql
+│   └── dynamodb.json
+└── lambda/
+    ├── log-normalizer/
+    │   ├── handler.py
+    │   ├── normalizer.py
+    │   ├── mask.py
+    │   ├── test_normalizer.py
+    │   └── requirements.txt
+    └── transaction-aggregator/     ← draft
+        ├── handler.py
+        ├── aggregator.py
+        ├── constants.py
+        ├── keys.py
+        └── test_aggregator_retry.py</div>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="guide">
+      <h2>Hướng dẫn chạy</h2>
+
+      <h3 id="env">Yêu cầu môi trường</h3>
+      <table>
+        <tr><th>Môi trường</th><th>Yêu cầu</th></tr>
+        <tr><td>Local development</td><td>Python 3.12+, pip; (tùy chọn) AWS CLI v2</td></tr>
+        <tr><td>AWS deploy</td><td>Lambda, Kinesis, IAM, CloudWatch Logs; region khuyến nghị <code>ap-southeast-1</code></td></tr>
+      </table>
+      <pre><code>python --version
+pip --version
+aws --version
+aws sts get-caller-identity</code></pre>
+
+      <h3 id="test-local">Chạy unit test local (Log Normalizer)</h3>
+      <pre><code>cd lambda/log-normalizer
+python -m venv .venv
+
+# Windows PowerShell
+.\.venv\Scripts\Activate.ps1
+
+pip install -r requirements.txt
+python -m unittest test_normalizer.py -v</code></pre>
+      <p>Kết quả mong đợi: <code>test_missing_ids_returns_none</code>, <code>test_normalize_json_log</code> — OK</p>
+
+      <h3 id="build">Build package Lambda</h3>
+      <pre><code># Windows PowerShell — từ lambda/log-normalizer
+if (Test-Path package) { Remove-Item -Recurse -Force package }
+if (Test-Path log-normalizer.zip) { Remove-Item -Force log-normalizer.zip }
+
+New-Item -ItemType Directory -Path package | Out-Null
+pip install -r requirements.txt -t package/
+Copy-Item handler.py, normalizer.py, mask.py -Destination package/
+Compress-Archive -Path package\* -DestinationPath log-normalizer.zip</code></pre>
+
+      <h3 id="deploy">Deploy Lambda lên AWS</h3>
+      <h4>Tạo function (lần đầu)</h4>
+      <pre><code>aws lambda create-function ^
+  --function-name logstream-log-normalizer ^
+  --runtime python3.12 ^
+  --role arn:aws:iam::&lt;ACCOUNT_ID&gt;:role/logstream-lambda-role ^
+  --handler handler.handler ^
+  --zip-file fileb://log-normalizer.zip ^
+  --timeout 60 ^
+  --memory-size 512 ^
+  --environment Variables="{OUTPUT_STREAM_NAME=logstream-normalized,LOG_LEVEL=INFO}" ^
+  --region ap-southeast-1</code></pre>
+
+      <h4>Cập nhật code</h4>
+      <pre><code>aws lambda update-function-code ^
+  --function-name logstream-log-normalizer ^
+  --zip-file fileb://log-normalizer.zip ^
+  --region ap-southeast-1</code></pre>
+
+      <table>
+        <tr><th>Biến môi trường</th><th>Bắt buộc</th><th>Mô tả</th></tr>
+        <tr><td><code>OUTPUT_STREAM_NAME</code></td><td>Có</td><td>Kinesis stream output sau normalize</td></tr>
+        <tr><td><code>DLQ_STREAM_NAME</code></td><td>Không</td><td>Stream cho log thiếu transactionId/traceId</td></tr>
+        <tr><td><code>LOG_LEVEL</code></td><td>Không</td><td>INFO | DEBUG | WARNING | ERROR</td></tr>
+        <tr><td><code>AWS_REGION</code></td><td>Tự động</td><td>Lambda runtime inject</td></tr>
+      </table>
+
+      <h3 id="aws-config">Cấu hình AWS (Kinesis, trigger, IAM)</h3>
+      <pre><code># Tạo Kinesis streams
+aws kinesis create-stream --stream-name logstream-raw --shard-count 1 --region ap-southeast-1
+aws kinesis create-stream --stream-name logstream-normalized --shard-count 2 --region ap-southeast-1
+aws kinesis create-stream --stream-name logstream-normalizer-dlq --shard-count 1 --region ap-southeast-1
+
+# Gắn Kinesis trigger
+aws lambda create-event-source-mapping ^
+  --function-name logstream-log-normalizer ^
+  --event-source-arn arn:aws:kinesis:ap-southeast-1:&lt;ACCOUNT_ID&gt;:stream/logstream-raw ^
+  --starting-position LATEST ^
+  --batch-size 100 ^
+  --parallelization-factor 2 ^
+  --region ap-southeast-1</code></pre>
+
+      <h4>IAM policy tối thiểu</h4>
+      <pre><code>{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"],
+      "Resource": "arn:aws:logs:*:*:*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "kinesis:GetRecords", "kinesis:GetShardIterator",
+        "kinesis:DescribeStream", "kinesis:DescribeStreamSummary",
+        "kinesis:ListShards", "kinesis:PutRecords", "kinesis:PutRecord"
+      ],
+      "Resource": "arn:aws:kinesis:ap-southeast-1:&lt;ACCOUNT_ID&gt;:stream/logstream-*"
+    }
+  ]
+}</code></pre>
+
+      <h3 id="test-lambda">Test Lambda với event mẫu</h3>
+      <pre><code>cd lambda/log-normalizer
+python generate_sample_event.py
+# Output: events/sample-kinesis-event.json
+
+aws lambda invoke ^
+  --function-name logstream-log-normalizer ^
+  --payload file://events/sample-kinesis-event.json ^
+  --cli-binary-format raw-in-base64-out ^
+  --region ap-southeast-1 ^
+  response.json</code></pre>
+      <p>Response mong đợi: <code>{"normalizedCount": 1, "invalidCount": 0, "requestId": "..."}</code></p>
+
+      <h3 id="init-pg">Khởi tạo PostgreSQL</h3>
+      <pre><code>psql -h &lt;HOST&gt; -U &lt;USER&gt; -d logstream -f schema/postgresql.sql
+# Sau khi có retry design:
+psql -h &lt;HOST&gt; -U &lt;USER&gt; -d logstream -f schema/postgresql-retry-migration.sql</code></pre>
+
+      <h3 id="init-ddb">Khởi tạo DynamoDB</h3>
+      <pre><code>aws dynamodb create-table ^
+  --table-name LogStreamTransactions ^
+  --attribute-definitions ^
+    AttributeName=pk,AttributeType=S ^
+    AttributeName=sk,AttributeType=S ^
+    AttributeName=gsi1pk,AttributeType=S ^
+    AttributeName=gsi1sk,AttributeType=S ^
+    AttributeName=gsi2pk,AttributeType=S ^
+    AttributeName=gsi2sk,AttributeType=S ^
+  --key-schema AttributeName=pk,KeyType=HASH AttributeName=sk,KeyType=RANGE ^
+  --billing-mode PAY_PER_REQUEST ^
+  --global-secondary-indexes "[{...}]" ^
+  --stream-specification StreamEnabled=true,StreamViewType=OLD_IMAGE ^
+  --region ap-southeast-1
+
+aws dynamodb update-time-to-live ^
+  --table-name LogStreamTransactions ^
+  --time-to-live-specification Enabled=true,AttributeName=ttl ^
+  --region ap-southeast-1</code></pre>
+      <p>Schema đầy đủ: <code>schema/dynamodb.json</code></p>
+
+      <h3 id="e2e">Gửi log thử nghiệm end-to-end</h3>
+      <pre><code>{
+  "transactionId": "TXN-001",
+  "traceId": "trace-bbb",
+  "step": "PAYMENT",
+  "level": "ERROR",
+  "message": "Payment declined",
+  "errorCode": "PAYMENT_DECLINED",
+  "stepStatus": "ERROR",
+  "timestamp": "2026-06-09T10:00:03.500Z"
+}</code></pre>
+      <ol>
+        <li>Microservice ghi log JSON → CloudWatch</li>
+        <li>Subscription Filter → Kinesis <code>logstream-raw</code></li>
+        <li>Lambda log-normalizer xử lý batch</li>
+        <li>Kinesis <code>logstream-normalized</code> nhận event đã chuẩn hóa</li>
+        <li>Transaction Aggregator → DynamoDB → S3 + PostgreSQL</li>
+      </ol>
+
+      <h3 id="troubleshoot">Xử lý lỗi thường gặp</h3>
+      <table>
+        <tr><th>Lỗi</th><th>Giải pháp</th></tr>
+        <tr><td><code>KeyError OUTPUT_STREAM_NAME</code></td><td>Chưa set biến môi trường trên Lambda</td></tr>
+        <tr><td><code>RuntimeError Kinesis PutRecords failed</code></td><td>Kiểm tra IAM, tên stream, throughput</td></tr>
+        <tr><td><code>normalizedCount = 0</code></td><td>Log thiếu transactionId hoặc traceId; kiểm tra DLQ</td></tr>
+        <tr><td><code>Unable to import module handler</code></td><td>Zip thiếu file; handler đúng: <code>handler.handler</code></td></tr>
+        <tr><td>Subscription filter không gửi log</td><td>Filter pattern không khớp JSON log</td></tr>
+      </table>
+
+      <h4>Checklist triển khai nhanh</h4>
+      <ul class="checklist">
+        <li>Python 3.12 + pip cài local</li>
+        <li>Unit test pass</li>
+        <li>Build log-normalizer.zip</li>
+        <li>Tạo Kinesis streams</li>
+        <li>Deploy Lambda + env OUTPUT_STREAM_NAME</li>
+        <li>Gắn event source mapping</li>
+        <li>Cấu hình IAM role</li>
+        <li>CloudWatch subscription filter</li>
+        <li>Invoke test → normalizedCount &gt;= 1</li>
+        <li>PostgreSQL: chạy schema</li>
+        <li>DynamoDB: tạo LogStreamTransactions</li>
+      </ul>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="schema">
+      <h2>Database Schema</h2>
+      <p>Tài liệu cấu trúc bảng <strong>PostgreSQL</strong> (persistent) và <strong>DynamoDB</strong> (buffer tạm trong lúc transaction đang chạy).</p>
+
+      <h3>Vai trò các store</h3>
+      <table>
+        <tr><th>Store</th><th>Vai trò</th><th>Khi nào ghi</th></tr>
+        <tr><td><strong>DynamoDB</strong></td><td>Buffer tạm: metadata + log chunks theo transactionId</td><td>Trong lúc transaction RUNNING</td></tr>
+        <tr><td><strong>PostgreSQL</strong></td><td>Source of truth: flow diagram, step metadata</td><td>Sau khi transaction kết thúc (flush)</td></tr>
+        <tr><td><strong>S3</strong></td><td>Full log archive theo traceId / step</td><td>Sau khi transaction kết thúc (flush)</td></tr>
+      </table>
+
+      <h3 id="pg-transactions">PostgreSQL</h3>
+      <h4>ERD</h4>
+      <div class="tree">transactions (1) ──&lt; (N) transaction_steps
+                              └──&lt; (N) step_attempts   ← sau retry migration</div>
+
+      <h4>Bảng <code>transactions</code></h4>
+      <table>
+        <tr><th>Cột</th><th>Kiểu</th><th>Mô tả</th></tr>
+        <tr><td><code>transaction_id</code></td><td>VARCHAR(64) PK</td><td>ID giao dịch</td></tr>
+        <tr><td><code>status</code></td><td>VARCHAR(20)</td><td>RUNNING | COMPLETED | FAILED | TIMEOUT</td></tr>
+        <tr><td><code>current_step</code></td><td>VARCHAR(64)</td><td>Step đang chạy / step cuối</td></tr>
+        <tr><td><code>started_at</code></td><td>TIMESTAMPTZ</td><td>Thời điểm bắt đầu</td></tr>
+        <tr><td><code>completed_at</code></td><td>TIMESTAMPTZ</td><td>Thời điểm kết thúc</td></tr>
+        <tr><td><code>last_updated_at</code></td><td>TIMESTAMPTZ</td><td>Cập nhật lần cuối</td></tr>
+        <tr><td><code>issue_detected</code></td><td>BOOLEAN</td><td>Có issue từ Detection Engine</td></tr>
+        <tr><td><code>issue_type</code></td><td>VARCHAR(50)</td><td>ERROR_PATTERN, TIMEOUT, FRAUD, ...</td></tr>
+        <tr><td><code>metadata</code></td><td>JSONB</td><td>Dữ liệu mở rộng</td></tr>
+      </table>
+
+      <h4>Bảng <code>transaction_steps</code></h4>
+      <table>
+        <tr><th>Cột</th><th>Kiểu</th><th>Mô tả</th></tr>
+        <tr><td><code>id</code></td><td>BIGSERIAL PK</td><td>Surrogate key</td></tr>
+        <tr><td><code>transaction_id</code></td><td>VARCHAR(64) FK</td><td>→ transactions</td></tr>
+        <tr><td><code>step_name</code></td><td>VARCHAR(64)</td><td>AUTH, PAYMENT, NOTIFY, ...</td></tr>
+        <tr><td><code>step_order</code></td><td>INT</td><td>Thứ tự step (1, 2, 3, ...)</td></tr>
+        <tr><td><code>trace_id</code></td><td>VARCHAR(64)</td><td>Trace ID (backward compat)</td></tr>
+        <tr><td><code>latest_trace_id</code></td><td>VARCHAR(64)</td><td><span class="badge badge-new">Mới</span> Trace attempt cuối</td></tr>
+        <tr><td><code>attempt_count</code></td><td>INT</td><td><span class="badge badge-new">Mới</span> Số lần thử</td></tr>
+        <tr><td><code>status</code></td><td>VARCHAR(20)</td><td>STARTED | RETRYING | SUCCESS | ERROR | TIMEOUT | SKIPPED</td></tr>
+        <tr><td><code>service_name</code></td><td>VARCHAR(64)</td><td>Microservice xử lý step</td></tr>
+        <tr><td><code>started_at</code> / <code>ended_at</code></td><td>TIMESTAMPTZ</td><td>Thời gian step</td></tr>
+        <tr><td><code>duration_ms</code></td><td>INT</td><td>Thời gian xử lý (ms)</td></tr>
+        <tr><td><code>error_code</code> / <code>error_message</code></td><td></td><td>Thông tin lỗi</td></tr>
+        <tr><td><code>s3_log_key</code></td><td>VARCHAR(512)</td><td>S3 path full log</td></tr>
+        <tr><td><code>log_line_count</code></td><td>INT</td><td>Số dòng log archive</td></tr>
+      </table>
+
+      <h4>Query mẫu — Flow diagram</h4>
+      <pre><code>SELECT step_order, step_name, trace_id, status, service_name,
+       started_at, ended_at, duration_ms, error_code, s3_log_key
+FROM transaction_steps
+WHERE transaction_id = 'TXN-001'
+ORDER BY step_order;</code></pre>
+
+      <h3 id="ddb">DynamoDB — Table <code>LogStreamTransactions</code></h3>
+      <p>Single-table design. Buffer tạm trong lúc transaction đang chạy. Xóa sau khi flush lên S3 + PostgreSQL.</p>
+
+      <h4>Key schema</h4>
+      <table>
+        <tr><th>Key</th><th>Pattern</th><th>Ví dụ</th></tr>
+        <tr><td><strong>PK</strong></td><td><code>TXN#&lt;transactionId&gt;</code></td><td><code>TXN#TXN-001</code></td></tr>
+        <tr><td><strong>SK</strong></td><td><code>&lt;type&gt;#&lt;discriminator&gt;</code></td><td><code>META</code>, <code>STEP#02#PAYMENT</code>, <code>LOG#trace-bbb#0001</code></td></tr>
+      </table>
+
+      <h4>Item type: META</h4>
+      <div class="tree">PK:  TXN#TXN-001
+SK:  META</div>
+      <table>
+        <tr><th>Attribute</th><th>Type</th><th>Mô tả</th></tr>
+        <tr><td><code>transactionId</code></td><td>S</td><td>ID giao dịch</td></tr>
+        <tr><td><code>status</code></td><td>S</td><td>RUNNING | COMPLETED | FAILED | TIMEOUT</td></tr>
+        <tr><td><code>currentStep</code></td><td>S</td><td>Step hiện tại</td></tr>
+        <tr><td><code>stepCount</code></td><td>N</td><td>Số step đã ghi nhận</td></tr>
+        <tr><td><code>startedAt</code> / <code>lastUpdatedAt</code></td><td>S</td><td>ISO 8601 — lastUpdatedAt dùng idle timeout</td></tr>
+        <tr><td><code>ttl</code></td><td>N</td><td>Epoch seconds auto-delete (+24h)</td></tr>
+        <tr><td><code>gsi1pk</code> / <code>gsi1sk</code></td><td>S</td><td>STATUS#RUNNING + lastUpdatedAt (sparse GSI)</td></tr>
+        <tr><td><code>metadata</code></td><td>M</td><td>Map mở rộng</td></tr>
+      </table>
+
+      <h4>Item type: STEP</h4>
+      <div class="tree">PK:  TXN#TXN-001
+SK:  STEP#&lt;order&gt;#&lt;stepName&gt;     ← STEP#02#PAYMENT</div>
+      <table>
+        <tr><th>Attribute</th><th>Type</th><th>Mô tả</th></tr>
+        <tr><td><code>stepName</code> / <code>stepOrder</code></td><td>S / N</td><td>Tên và thứ tự step</td></tr>
+        <tr><td><code>latestTraceId</code></td><td>S</td><td>Trace ID attempt cuối (đổi từ traceId)</td></tr>
+        <tr><td><code>attemptCount</code></td><td>N</td><td>Số attempt</td></tr>
+        <tr><td><code>status</code></td><td>S</td><td>STARTED | RETRYING | SUCCESS | ERROR | TIMEOUT | SKIPPED</td></tr>
+        <tr><td><code>serviceName</code></td><td>S</td><td>Microservice</td></tr>
+        <tr><td><code>startedAt</code> / <code>endedAt</code></td><td>S</td><td>ISO 8601</td></tr>
+        <tr><td><code>durationMs</code></td><td>N</td><td>Thời gian xử lý</td></tr>
+        <tr><td><code>errorCode</code> / <code>errorMessage</code></td><td>S</td><td>Thông tin lỗi</td></tr>
+        <tr><td><code>logChunkCount</code></td><td>N</td><td>Số chunk LOG buffer</td></tr>
+      </table>
+
+      <h4>Item type: LOG</h4>
+      <div class="tree">PK:  TXN#TXN-001
+SK:  LOG#&lt;traceId&gt;#&lt;chunkSeq&gt;    ← LOG#trace-bbb#0001</div>
+      <p>Buffer log tạm theo chunk. Mỗi chunk tối đa ~300 KB (giới hạn item DynamoDB 400 KB).</p>
+      <table>
+        <tr><th>Attribute</th><th>Type</th><th>Mô tả</th></tr>
+        <tr><td><code>traceId</code> / <code>stepName</code></td><td>S</td><td>Trace và step tương ứng</td></tr>
+        <tr><td><code>chunkSeq</code></td><td>N</td><td>Số thứ tự chunk (1, 2, 3, ...)</td></tr>
+        <tr><td><code>logLines</code></td><td>L</td><td>List các log event (JSON object)</td></tr>
+        <tr><td><code>lineCount</code> / <code>byteSize</code></td><td>N</td><td>Số dòng và kích thước</td></tr>
+        <tr><td><code>createdAt</code></td><td>S</td><td>ISO 8601</td></tr>
+      </table>
+
+      <h4>Cấu trúc item theo transaction</h4>
+      <div class="tree">TXN#TXN-001
+├── META
+├── STEP#01#AUTH
+├── STEP#02#PAYMENT
+├── LOG#trace-aaa#0001
+├── LOG#trace-bbb#0001
+└── LOG#trace-bbb#0002          ← chunk thêm nếu log dài</div>
+
+      <h4>GSI</h4>
+      <p><strong>GSI1 — StatusIndex</strong> (idle timeout detection): <code>gsi1pk = STATUS#RUNNING</code>, <code>gsi1sk = lastUpdatedAt</code>. Sparse GSI — xóa khi transaction COMPLETED/FAILED.</p>
+      <p><strong>GSI2 — TraceIndex</strong> (tra cứu ngược): <code>gsi2pk = TRACE#&lt;traceId&gt;</code>, <code>gsi2sk = TXN#&lt;transactionId&gt;</code>. Chỉ trên ATTEMPT items (retry design).</p>
+
+      <h4>Access patterns</h4>
+      <table>
+        <tr><th>#</th><th>Hành động</th><th>Operation</th></tr>
+        <tr><td>1</td><td>Log event mới</td><td>UpdateItem META + PutItem/UpdateItem STEP + append LOG chunk</td></tr>
+        <tr><td>2</td><td>Đọc state transaction</td><td>GetItem PK=TXN#id, SK=META</td></tr>
+        <tr><td>3</td><td>Đọc tất cả steps</td><td>Query PK=TXN#id, SK begins_with STEP#</td></tr>
+        <tr><td>4</td><td>Đọc log buffer 1 step</td><td>Query PK=TXN#id, SK begins_with LOG#trace-xxx#</td></tr>
+        <tr><td>5</td><td>Idle timeout sweep</td><td>Query GSI1: STATUS#RUNNING + gsi1sk &lt; threshold</td></tr>
+        <tr><td>6</td><td>Tra cứu theo traceId</td><td>Query GSI2: TRACE#&lt;traceId&gt;</td></tr>
+        <tr><td>7</td><td>Transaction kết thúc</td><td>Query toàn PK → flush S3 + PostgreSQL → BatchWriteItem delete</td></tr>
+        <tr><td>8</td><td>Cleanup orphan</td><td>TTL auto-delete; DynamoDB Streams trigger flush</td></tr>
+      </table>
+
+      <h4>Flush flow</h4>
+      <div class="tree">1. Query PK = TXN#&lt;transactionId&gt;  (lấy META + STEP + LOG)
+2. Group LOG items theo traceId
+3. Với mỗi traceId:
+     → Ghi S3: s3://logstream-archive/.../transactionId=.../traceId=.../part-0001.jsonl.gz
+4. UPSERT PostgreSQL:
+     → transactions (status, completed_at, ...)
+     → transaction_steps (step metadata, s3_log_key, log_line_count)
+5. BatchDelete tất cả items PK = TXN#&lt;transactionId&gt;</div>
+
+      <h3 id="mapping">Mapping DynamoDB → PostgreSQL + S3</h3>
+      <table>
+        <tr><th>DynamoDB</th><th>PostgreSQL</th><th>S3</th></tr>
+        <tr><td><code>META</code></td><td><code>transactions</code></td><td>—</td></tr>
+        <tr><td><code>STEP#xx#name</code></td><td><code>transaction_steps</code></td><td>—</td></tr>
+        <tr><td><code>ATTEMPT#xx#name#nnn</code></td><td><code>step_attempts</code></td><td>—</td></tr>
+        <tr><td><code>LOG#traceId#nnn</code></td><td><code>step_attempts.s3_log_key</code></td><td><code>.../traceId/*.jsonl.gz</code></td></tr>
+      </table>
+
+      <h4>Ràng buộc &amp; lưu ý</h4>
+      <table>
+        <tr><th>Ràng buộc</th><th>Giải pháp</th></tr>
+        <tr><td>DynamoDB item max 400 KB</td><td>Chunk log ~300 KB/item, tạo LOG#...#0002 khi đầy</td></tr>
+        <tr><td>Transaction orphan</td><td>TTL 24h + DynamoDB Streams flush trước khi xóa</td></tr>
+        <tr><td>Hot partition</td><td>PK = TXN#&lt;transactionId&gt; — phân tán tốt với UUID</td></tr>
+        <tr><td>Ghi log liên tục</td><td>Buffer in-memory 50–100 dòng hoặc 5s rồi batch write</td></tr>
+        <tr><td>Step transition atomic</td><td>TransactWriteItems cập nhật META + STEP cùng lúc</td></tr>
+      </table>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="retry">
+      <h2>Retry &amp; Attempt Design <span class="badge badge-draft">Draft</span></h2>
+      <p>Tài liệu draft cho case <strong>transaction có retry job async</strong>, thời gian step không cố định, cần vẫn ghi nhận log qua pipeline hiện tại.</p>
+
+      <h3>Tóm tắt thay đổi</h3>
+      <table>
+        <tr><th>Thành phần</th><th>Trước</th><th>Sau</th></tr>
+        <tr><td>Kết thúc transaction</td><td>Timeout cố định (GSI1)</td><td><strong>Idle timeout</strong> + lifecycle event</td></tr>
+        <tr><td>1 step = 1 traceId</td><td>Có (conflict retry)</td><td><strong>1 step = N attempts</strong>, mỗi attempt 1 traceId</td></tr>
+        <tr><td>DynamoDB buffer</td><td>META + STEP + LOG</td><td>Thêm <strong>ATTEMPT</strong> item</td></tr>
+        <tr><td>PostgreSQL</td><td>transaction_steps only</td><td>Thêm <strong>step_attempts</strong></td></tr>
+        <tr><td>STEP status</td><td>STARTED/SUCCESS/ERROR/...</td><td>Thêm <strong>RETRYING</strong></td></tr>
+      </table>
+
+      <h3 id="retry-log">Quy ước log từ microservice / retry job</h3>
+
+      <h4>Attempt đầu (service gốc)</h4>
+      <pre><code>{
+  "transactionId": "TXN-001",
+  "traceId": "trace-bbb",
+  "step": "PAYMENT",
+  "level": "ERROR",
+  "message": "Payment declined",
+  "errorCode": "PAYMENT_DECLINED",
+  "stepStatus": "ERROR",
+  "timestamp": "2026-06-09T10:00:03.500Z"
+}</code></pre>
+
+      <h4>Retry job (attempt 2)</h4>
+      <pre><code>{
+  "transactionId": "TXN-001",
+  "traceId": "trace-retry-002",
+  "step": "PAYMENT",
+  "level": "INFO",
+  "message": "Retry payment attempt 2",
+  "stepStatus": "STARTED",
+  "timestamp": "2026-06-09T10:05:00.000Z",
+  "metadata": {
+    "isRetry": true,
+    "attempt": 2,
+    "parentTraceId": "trace-bbb"
+  }
+}</code></pre>
+
+      <h4>Heartbeat (retry chạy lâu, ít log)</h4>
+      <pre><code>{
+  "transactionId": "TXN-001",
+  "traceId": "trace-retry-002",
+  "step": "PAYMENT",
+  "level": "DEBUG",
+  "message": "Retry in progress",
+  "metadata": { "isRetry": true, "attempt": 2, "heartbeat": true }
+}</code></pre>
+
+      <h4>Kết thúc transaction (bắt buộc để flush)</h4>
+      <pre><code>{
+  "eventType": "TRANSACTION_COMPLETED",
+  "transactionId": "TXN-001",
+  "timestamp": "2026-06-09T10:06:00.000Z"
+}</code></pre>
+      <p>Hoặc <code>TRANSACTION_FAILED</code> khi hết retry.</p>
+
+      <div class="callout">
+        <strong>Bắt buộc retry job:</strong> luôn gửi <code>transactionId</code> (giữ nguyên),
+        <code>traceId</code> mới mỗi attempt, <code>step</code> cùng tên step logic.
+      </div>
+
+      <h3 id="retry-ddb">DynamoDB — Item type ATTEMPT</h3>
+      <div class="tree">PK:  TXN#TXN-001
+SK:  ATTEMPT#&lt;order&gt;#&lt;stepName&gt;#&lt;attemptPadded&gt;   ← ATTEMPT#02#PAYMENT#002</div>
+      <table>
+        <tr><th>Attribute</th><th>Type</th><th>Mô tả</th></tr>
+        <tr><td><code>stepName</code> / <code>stepOrder</code></td><td>S / N</td><td>PAYMENT, 2</td></tr>
+        <tr><td><code>attemptNumber</code></td><td>N</td><td>1, 2, 3...</td></tr>
+        <tr><td><code>traceId</code></td><td>S</td><td>traceId của attempt này</td></tr>
+        <tr><td><code>parentTraceId</code></td><td>S | null</td><td>traceId attempt trước (retry)</td></tr>
+        <tr><td><code>isRetry</code></td><td>BOOL</td><td>true nếu attempt &gt; 1 hoặc metadata.isRetry</td></tr>
+        <tr><td><code>status</code></td><td>S</td><td>STARTED | SUCCESS | ERROR | TIMEOUT | SKIPPED</td></tr>
+        <tr><td><code>serviceName</code></td><td>S</td><td>retry-worker / payment-svc</td></tr>
+        <tr><td><code>startedAt</code> / <code>endedAt</code></td><td>S</td><td>ISO 8601</td></tr>
+        <tr><td><code>durationMs</code></td><td>N | null</td><td></td></tr>
+        <tr><td><code>errorCode</code> / <code>errorMessage</code></td><td>S | null</td><td></td></tr>
+        <tr><td><code>logChunkCount</code></td><td>N</td><td>Số chunk LOG buffer</td></tr>
+        <tr><td><code>gsi2pk</code> / <code>gsi2sk</code></td><td>S</td><td>TRACE#&lt;traceId&gt; / TXN#&lt;transactionId&gt;</td></tr>
+      </table>
+
+      <h4>Cấu trúc transaction có retry</h4>
+      <div class="tree">TXN#TXN-001
+├── META                          status=RUNNING, lastUpdatedAt reset mỗi log
+├── STEP#02#PAYMENT               status=RETRYING, attemptCount=2, latestTraceId=trace-retry-002
+├── ATTEMPT#02#PAYMENT#001        attempt 1, trace-bbb, ERROR
+├── ATTEMPT#02#PAYMENT#002        attempt 2, trace-retry-002, STARTED
+├── LOG#trace-bbb#0001
+└── LOG#trace-retry-002#0001</div>
+
+      <h4>STEP item — thay đổi</h4>
+      <ul>
+        <li><code>traceId</code> → đổi tên thành <strong><code>latestTraceId</code></strong> (trace attempt cuối)</li>
+        <li>Thêm <strong><code>attemptCount</code></strong></li>
+        <li>Status thêm <strong><code>RETRYING</code></strong></li>
+        <li><strong>Bỏ</strong> <code>gsi2pk</code>/<code>gsi2sk</code> trên STEP (GSI2 chỉ trên ATTEMPT)</li>
+      </ul>
+
+      <h3 id="idle-timeout">Idle timeout (thay fixed timeout)</h3>
+      <p>GSI1 vẫn dùng <code>STATUS#RUNNING</code> + <code>gsi1sk = lastUpdatedAt</code>, nhưng semantics đổi:</p>
+      <table>
+        <tr><th></th><th>Fixed timeout</th><th>Idle timeout</th></tr>
+        <tr><td>Ý nghĩa</td><td>Transaction chạy quá 30s</td><td><strong>Không có log/event nào trong 30 phút</strong></td></tr>
+        <tr><td>Reset timer</td><td>Không</td><td>Mỗi LOG / heartbeat → lastUpdatedAt = now()</td></tr>
+        <tr><td>Retry dài</td><td>False positive TIMEOUT</td><td>An toàn nếu retry ghi log định kỳ</td></tr>
+      </table>
+      <pre><code># Detection Engine — idle sweep (khuyến nghị default 30 phút)
+IDLE_TIMEOUT_SECONDS = 30 * 60
+
+threshold = now() - IDLE_TIMEOUT_SECONDS
+query GSI1 where gsi1pk = 'STATUS#RUNNING' AND gsi1sk &lt; threshold
+# → đánh dấu TIMEOUT, emit TRANSACTION_ISSUE, optional flush</code></pre>
+      <p>Timeout sweep <strong>không</strong> flush transaction đang chờ retry có <code>metadata.awaitingRetry = true</code> trên META (tùy chọn).</p>
+
+      <h3 id="aggregator">Transaction Aggregator — luồng xử lý event</h3>
+      <div class="mermaid">
+flowchart TD
+    A[Kinesis normalized event] --> B{eventType?}
+    B -->|LOG| C[handle_log_event]
+    B -->|TRANSACTION_COMPLETED| D[flush_transaction]
+    B -->|TRANSACTION_FAILED| E[flush_transaction FAILED]
+
+    C --> F[Update META.lastUpdatedAt]
+    C --> G{STEP exists?}
+    G -->|No| H[Create STEP + ATTEMPT#001]
+    G -->|Yes| I{Same traceId?}
+    I -->|Yes| J[Update ATTEMPT + append LOG]
+    I -->|No / isRetry| K[Create ATTEMPT#N+1, STEP=RETRYING]
+    J --> L{stepStatus terminal?}
+    K --> L
+    L -->|SUCCESS/ERROR| M[Update STEP aggregate status]
+      </div>
+
+      <h4>Pseudocode handle_log_event</h4>
+      <pre><code>function handle_log_event(event):
+    txn_id   = event.transactionId
+    trace_id = event.traceId
+    step     = event.stepName
+    now      = iso_now()
+
+    is_retry = event.metadata.isRetry OR event.metadata.attempt > 1
+    attempt  = event.metadata.attempt OR null
+    parent   = event.metadata.parentTraceId OR null
+
+    # 1. Luôn reset idle timer
+    update_meta(txn_id, lastUpdatedAt=now, gsi1sk=now, currentStep=step)
+
+    # 2. Resolve STEP
+    step_item = get_step(txn_id, step)
+    if not step_item:
+        step_order = next_step_order(txn_id)
+        put_step(txn_id, step, order=step_order, status=STARTED, attemptCount=1)
+        put_attempt(txn_id, step, attempt=1, trace_id, is_retry=false, status=STARTED)
+    else:
+        current_attempt = get_attempt_by_trace(txn_id, trace_id)
+        if current_attempt:
+            merge_attempt_status(current_attempt, event.stepStatus)
+        elif is_retry OR trace_id != step_item.latestTraceId:
+            n = step_item.attemptCount + 1
+            attempt_num = attempt OR n
+            put_attempt(txn_id, step, attempt=attempt_num, trace_id,
+                        parent_trace_id=parent OR step_item.latestTraceId,
+                        is_retry=true, status=STARTED)
+            update_step(txn_id, step, status=RETRYING, attemptCount=attempt_num,
+                        latestTraceId=trace_id)
+
+    # 3. Buffer log
+    append_log_chunk(txn_id, trace_id, step, event)
+
+    # 4. Cập nhật STEP aggregate nếu attempt terminal
+    if event.stepStatus in (SUCCESS, ERROR, TIMEOUT, SKIPPED):
+        update_step_from_latest_attempt(txn_id, step)</code></pre>
+
+      <h4>Flush → PostgreSQL + S3</h4>
+      <pre><code>function flush_transaction(txn_id, final_status):
+    items = query_all PK=TXN#txn_id
+
+    for each ATTEMPT item (group by stepName, sort by attemptNumber):
+        logs = query LOG#&lt;traceId&gt;#*
+        s3_key = write_s3(txn_id, traceId, logs)
+        upsert step_attempts (...)
+
+    for each STEP item:
+        upsert transaction_steps (
+            status, attempt_count, latest_trace_id,
+            error_code from last failed attempt or success
+        )
+
+    upsert transactions (status=final_status, completed_at=now)
+    batch_delete all items PK=TXN#txn_id</code></pre>
+      <p>S3 path giữ nguyên: <code>.../transactionId=&lt;id&gt;/traceId=&lt;traceId&gt;/part-0001.jsonl.gz</code></p>
+
+      <h3 id="retry-pg">PostgreSQL — Bảng step_attempts</h3>
+      <table>
+        <tr><th>Cột</th><th>Kiểu</th><th>Mô tả</th></tr>
+        <tr><td><code>id</code></td><td>BIGSERIAL PK</td><td></td></tr>
+        <tr><td><code>transaction_id</code></td><td>VARCHAR(64) FK</td><td>→ transactions</td></tr>
+        <tr><td><code>step_name</code></td><td>VARCHAR(64)</td><td></td></tr>
+        <tr><td><code>attempt_number</code></td><td>INT</td><td>1, 2, 3...</td></tr>
+        <tr><td><code>trace_id</code></td><td>VARCHAR(64) UNIQUE</td><td>Trace riêng mỗi attempt</td></tr>
+        <tr><td><code>parent_trace_id</code></td><td>VARCHAR(64)</td><td>Trace attempt trước</td></tr>
+        <tr><td><code>is_retry</code></td><td>BOOLEAN</td><td></td></tr>
+        <tr><td><code>status</code></td><td>VARCHAR(20)</td><td>STARTED | SUCCESS | ERROR | TIMEOUT | SKIPPED</td></tr>
+        <tr><td><code>s3_log_key</code></td><td>VARCHAR(512)</td><td>Full log archive</td></tr>
+        <tr><td><code>log_line_count</code></td><td>INT</td><td></td></tr>
+        <tr><td><code>metadata</code></td><td>JSONB</td><td></td></tr>
+      </table>
+
+      <h4>Query API (gợi ý)</h4>
+      <pre><code>-- Flow diagram
+SELECT step_order, step_name, status, attempt_count, latest_trace_id, error_code
+FROM transaction_steps
+WHERE transaction_id = $1
+ORDER BY step_order;
+
+-- Chi tiết attempts khi user click vào step PAYMENT
+SELECT attempt_number, trace_id, is_retry, status,
+       started_at, ended_at, s3_log_key, log_line_count
+FROM step_attempts
+WHERE transaction_id = $1 AND step_name = $2
+ORDER BY attempt_number;</code></pre>
+
+      <h4>Checklist triển khai retry</h4>
+      <ul class="checklist">
+        <li>Chạy postgresql-retry-migration.sql</li>
+        <li>Deploy Transaction Aggregator Lambda</li>
+        <li>Cập nhật retry worker: format log + heartbeat</li>
+        <li>Detection Engine: đổi fixed → idle timeout</li>
+        <li>Query API: endpoint list attempts per step</li>
+        <li>Emit TRANSACTION_COMPLETED / TRANSACTION_FAILED từ orchestrator</li>
+      </ul>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="lambda">
+      <h2>Lambda Components</h2>
+
+      <h3>Log Normalizer</h3>
+      <p>Entry point: <code>handler.handler</code>. Nhận batch Kinesis từ CloudWatch Logs subscription, decode base64 + gzip, normalize và ghi lên output stream.</p>
+
+      <h4>Normalized event output</h4>
+      <pre><code>{
+  "eventType": "LOG",
+  "transactionId": "TXN-001",
+  "traceId": "trace-bbb",
+  "stepName": "PAYMENT",
+  "level": "ERROR",
+  "message": "...",
+  "timestamp": "2026-06-09T...",
+  "serviceName": "payment-svc",
+  "logGroup": "/aws/lambda/...",
+  "logStream": "...",
+  "normalizedAt": "...",
+  "errorCode": "...",
+  "stepStatus": "ERROR",
+  "metadata": { ... }
+}</code></pre>
+      <p>Trả về <code>None</code> (→ DLQ) nếu thiếu <code>transactionId</code> hoặc <code>traceId</code>.</p>
+
+      <h4>PII Masking (<code>mask.py</code>)</h4>
+      <ul>
+        <li><strong>Field-based:</strong> email, password, token, ... → <code>***MASKED***</code></li>
+        <li><strong>Pattern-based:</strong> email, phone, credit card, SSN trong free-text</li>
+        <li><strong>Recursive:</strong> áp dụng đệ quy trên dict/list lồng nhau</li>
+      </ul>
+
+      <h4>Step aliases</h4>
+      <p>Map tên step không chuẩn → canonical uppercase: auth→AUTH, payment→PAYMENT, fraud→FRAUD_CHECK, ...</p>
+
+      <h3>Transaction Aggregator <span class="badge badge-draft">Draft</span></h3>
+      <p>Entry point: <code>handler.handler</code>. Input: Kinesis <code>logstream-normalized</code>. Output: DynamoDB buffer; flush S3 + PostgreSQL on lifecycle events.</p>
+      <table>
+        <tr><th>Biến môi trường</th><th>Mô tả</th></tr>
+        <tr><td><code>DYNAMODB_TABLE_NAME</code></td><td>Bắt buộc</td></tr>
+        <tr><td><code>S3_ARCHIVE_BUCKET</code></td><td>Bắt buộc khi flush</td></tr>
+        <tr><td><code>IDLE_TIMEOUT_SECONDS</code></td><td>Tùy chọn, default 1800</td></tr>
+      </table>
+    </section>
+
+    <!-- ============================================================ -->
+    <section id="sql">
+      <h2>SQL Scripts</h2>
+
+      <h3>schema/postgresql.sql</h3>
+      <pre><code>-- LogStream — PostgreSQL Schema
+
+CREATE TABLE IF NOT EXISTS transactions (
+    transaction_id    VARCHAR(64)   PRIMARY KEY,
+    status            VARCHAR(20)   NOT NULL DEFAULT 'RUNNING',
+    current_step      VARCHAR(64),
+    started_at        TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
+    completed_at      TIMESTAMPTZ,
+    last_updated_at   TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
+    issue_detected    BOOLEAN       NOT NULL DEFAULT FALSE,
+    issue_type        VARCHAR(50),
+    metadata          JSONB,
+    CONSTRAINT chk_transactions_status
+        CHECK (status IN ('RUNNING', 'COMPLETED', 'FAILED', 'TIMEOUT'))
+);
+
+CREATE TABLE IF NOT EXISTS transaction_steps (
+    id               BIGSERIAL     PRIMARY KEY,
+    transaction_id   VARCHAR(64)   NOT NULL
+                         REFERENCES transactions (transaction_id)
+                         ON DELETE CASCADE,
+    step_name        VARCHAR(64)   NOT NULL,
+    step_order       INT           NOT NULL,
+    trace_id         VARCHAR(64)   NOT NULL,
+    status           VARCHAR(20)   NOT NULL DEFAULT 'STARTED',
+    service_name     VARCHAR(64),
+    started_at       TIMESTAMPTZ,
+    ended_at         TIMESTAMPTZ,
+    duration_ms      INT,
+    error_code       VARCHAR(50),
+    error_message    TEXT,
+    s3_log_key       VARCHAR(512),
+    log_line_count   INT,
+    created_at       TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
+    updated_at       TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_transaction_step_name UNIQUE (transaction_id, step_name),
+    CONSTRAINT uq_transaction_step_order UNIQUE (transaction_id, step_order),
+    CONSTRAINT uq_trace_id UNIQUE (trace_id),
+    CONSTRAINT chk_transaction_steps_status
+        CHECK (status IN ('STARTED', 'SUCCESS', 'ERROR', 'TIMEOUT', 'SKIPPED'))
+);
+-- + indexes và trigger updated_at</code></pre>
+
+      <h3>schema/postgresql-retry-migration.sql</h3>
+      <pre><code>-- Chạy SAU postgresql.sql
+
+CREATE TABLE IF NOT EXISTS step_attempts (
+    id               BIGSERIAL     PRIMARY KEY,
+    transaction_id   VARCHAR(64)   NOT NULL
+                         REFERENCES transactions (transaction_id)
+                         ON DELETE CASCADE,
+    step_name        VARCHAR(64)   NOT NULL,
+    attempt_number   INT           NOT NULL,
+    trace_id         VARCHAR(64)   NOT NULL,
+    parent_trace_id  VARCHAR(64),
+    status           VARCHAR(20)   NOT NULL DEFAULT 'STARTED',
+    service_name     VARCHAR(64),
+    is_retry         BOOLEAN       NOT NULL DEFAULT FALSE,
+    started_at       TIMESTAMPTZ,
+    ended_at         TIMESTAMPTZ,
+    duration_ms      INT,
+    error_code       VARCHAR(50),
+    error_message    TEXT,
+    s3_log_key       VARCHAR(512),
+    log_line_count   INT,
+    metadata         JSONB,
+    created_at       TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
+    updated_at       TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_step_attempt_trace UNIQUE (trace_id),
+    CONSTRAINT uq_step_attempt_number UNIQUE (transaction_id, step_name, attempt_number),
+    CONSTRAINT chk_step_attempts_status
+        CHECK (status IN ('STARTED', 'SUCCESS', 'ERROR', 'TIMEOUT', 'SKIPPED'))
+);
+
+ALTER TABLE transaction_steps
+    ADD COLUMN IF NOT EXISTS attempt_count   INT NOT NULL DEFAULT 1,
+    ADD COLUMN IF NOT EXISTS latest_trace_id VARCHAR(64);
+
+ALTER TABLE transaction_steps
+    DROP CONSTRAINT IF EXISTS chk_transaction_steps_status;
+ALTER TABLE transaction_steps
+    ADD CONSTRAINT chk_transaction_steps_status
+        CHECK (status IN ('STARTED', 'RETRYING', 'SUCCESS', 'ERROR', 'TIMEOUT', 'SKIPPED'));
+
+ALTER TABLE transaction_steps DROP CONSTRAINT IF EXISTS uq_trace_id;
+-- + indexes và trigger updated_at</code></pre>
+    </section>
+  </main>
+</div>
+
+<footer>
+  LogStream Documentation — Generated from guide.txt, schema/database-schema.md, schema/retry-design.md
+</footer>
+
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: 'dark', themeVariables: {
+    primaryColor: '#1a2332',
+    primaryTextColor: '#e6edf3',
+    primaryBorderColor: '#2d3a4f',
+    lineColor: '#58a6ff',
+    secondaryColor: '#243044',
+    tertiaryColor: '#0f1419'
+  }});
+
+  // Highlight active nav link on scroll
+  const sections = document.querySelectorAll('section[id], h3[id], h4[id]');
+  const navLinks = document.querySelectorAll('nav.sidebar ul ul a');
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(link => {
+          link.classList.toggle('active', link.getAttribute('href') === '#' + entry.target.id);
+        });
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
